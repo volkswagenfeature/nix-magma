@@ -18,7 +18,22 @@
       {
         devShell = pkgs.mkShell {
           buildInputs = with pkgs; [
-            ( let import ./pnglatex
+            ( let 
+                # pnglatex should be factored into pnglatex.nix
+                # but that seems to be currently broken.
+                pnglatex = python39.pkgs.buildPythonPackage rec {
+                  pname = "pnglatex";
+                  version = "1.1";
+                  src = python39.pkgs.fetchPypi {
+                    inherit pname version;
+                    hash = "sha256-CZUGDUkmttO0BzFYbGFSNMPkWzFC/BW4NmAeOwz4Y9M=";
+                  };
+                  doCheck = false;
+                  meta = with lib; {
+                    homepage = "https://github.com/MaT1g3R/pnglatex";
+                    description = "a small program that converts LaTeX snippets to png";
+                };
+              };
               in python39.withPackages(
               ps:[
                 ps.pynvim
@@ -27,8 +42,8 @@
                 ps.pillow
                 ps.cairosvg
                 ps.plotly
-                #pnglatex is not here
-
+                # using definition above...
+                pnglatex
               ]
               )
             )
