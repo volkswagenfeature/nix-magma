@@ -14,42 +14,39 @@
         pkgs = import nixpkgs {
           inherit system;
         };
+        pythonenv = pkgs.python3.withPackages (
+          ps: [
+            ps.pynvim
+            ps.jupyter-client
+            ps.ueberzug
+            ps.pillow
+            ps.cairosvg
+            ps.plotly
+            # using definition above...
+            (ps.callPackage ./pnglatex.nix { })
+          ]
+        );
+        neovim = (pkgs.neovim.override {
+          configure = {
+            withPython3 = false;
+            python3Env = pythonenv;
+            customRC = "
+            "
+
+          };
+        });
       in
       {
+        defaultPackage = neovim;
         devShell = pkgs.mkShell {
-          buildInputs = with pkgs; [
-            ( let 
-                # pnglatex should be factored into pnglatex.nix
-                # but that seems to be currently broken.
-                pnglatex = python39.pkgs.buildPythonPackage rec {
-                  pname = "pnglatex";
-                  version = "1.1";
-                  src = python39.pkgs.fetchPypi {
-                    inherit pname version;
-                    hash = "sha256-CZUGDUkmttO0BzFYbGFSNMPkWzFC/BW4NmAeOwz4Y9M=";
-                  };
-                  doCheck = false;
-                  meta = with lib; {
-                    homepage = "https://github.com/MaT1g3R/pnglatex";
-                    description = "a small program that converts LaTeX snippets to png";
-                };
-              };
-              in python39.withPackages(
-              ps:[
-                ps.pynvim
-                ps.jupyter-client
-                ps.ueberzug
-                ps.pillow
-                ps.cairosvg
-                ps.plotly
-                # using definition above...
-                pnglatex
-              ]
-              )
-            )
-            nixpkgs-fmt
-            any-nix-shell
-
+          buildInputs = [
+            # pnglatex should be factored into pnglatex.nix
+            # but that seems to be currently broken.
+            # pnglatex = import ./pnglatex.nix;
+            neovim
+            pythonenv
+            pkgs.nixpkgs-fmt
+            pkgs.any-nix-shell
           ];
         };
       });
