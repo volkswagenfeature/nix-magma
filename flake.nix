@@ -2,6 +2,11 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-22.11";
     flake-utils.url = "github:numtide/flake-utils";
+
+    magma-nvim-src = {
+      url = "github:dccsillag/magma-nvim/main";
+      flake = false;
+    };
   };
 
   outputs = { nixpkgs, flake-utils, ... }:
@@ -15,6 +20,12 @@
           inherit system;
         };
 
+        buildPlugin = pkgs.vimUtils.buildVimPluginFrom2Nix {
+          pname = "magma-nvim";
+          version = versionOf inputs.magma-nvim-src;
+          src = inputs.magma-nvim-src;
+        };
+
         pythonEnvFn = (ps: with ps; [
           pynvim
           jupyter-client
@@ -25,7 +36,6 @@
           # using definition above...
           (callPackage ./pnglatex.nix { })
         ]);
-
 
         neovim = (pkgs.neovim.override {
           withPython3 = true;
@@ -40,7 +50,6 @@
             # pnglatex should be factored into pnglatex.nix
             # but that seems to be currently broken.
             # pnglatex = import ./pnglatex.nix;
-            (python3.withPackages pythonEnvFn)
             nixpkgs-fmt
           ];
         };
