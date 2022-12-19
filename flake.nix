@@ -6,10 +6,17 @@
     magma-nvim-src = {
       url = "github:dccsillag/magma-nvim/main";
       flake = false;
+
+    };
+    jupyterWith = {
+      url = "github:tweag/jupyterWith"; 
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.flake-utils.follows = "flake-utils";
+
     };
   };
 
-  outputs = { nixpkgs, flake-utils, ... }:
+  outputs = { nixpkgs, flake-utils, ... }@inputs:
     let
       supportedSystems = [ "aarch64-darwin" "x86_64-linux" ];
       eachSystem = flake-utils.lib.eachSystem supportedSystems;
@@ -20,9 +27,9 @@
           inherit system;
         };
 
-        buildPlugin = pkgs.vimUtils.buildVimPluginFrom2Nix {
+        magma-nvim = pkgs.vimUtils.buildVimPluginFrom2Nix {
           pname = "magma-nvim";
-          version = versionOf inputs.magma-nvim-src;
+          version = builtins.toString  inputs.magma-nvim-src.lastModified;
           src = inputs.magma-nvim-src;
         };
 
@@ -40,16 +47,17 @@
         neovim = (pkgs.neovim.override {
           withPython3 = true;
           extraPython3Packages = pythonEnvFn;
+          configure.packages.myPlugins = with pkgs.vimPlugins; {
+            start = [ vim-lastplace vim-nix magma-nvim ]; 
+          };
         });
       in
       {
         defaultPackage = neovim;
 
+
         devShell = pkgs.mkShell {
           buildInputs = with pkgs; [
-            # pnglatex should be factored into pnglatex.nix
-            # but that seems to be currently broken.
-            # pnglatex = import ./pnglatex.nix;
             nixpkgs-fmt
           ];
         };
