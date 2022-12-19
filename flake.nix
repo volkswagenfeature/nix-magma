@@ -14,39 +14,34 @@
         pkgs = import nixpkgs {
           inherit system;
         };
-        pythonenv = pkgs.python3.withPackages (
-          ps: [
-            ps.pynvim
-            ps.jupyter-client
-            ps.ueberzug
-            ps.pillow
-            ps.cairosvg
-            ps.plotly
-            # using definition above...
-            (ps.callPackage ./pnglatex.nix { })
-          ]
-        );
-        neovim = (pkgs.neovim.override {
-          configure = {
-            withPython3 = false;
-            python3Env = pythonenv;
-            customRC = "
-            "
 
-          };
+        pythonEnvFn = (ps: with ps; [
+          pynvim
+          jupyter-client
+          ueberzug
+          pillow
+          cairosvg
+          plotly
+          # using definition above...
+          (callPackage ./pnglatex.nix { })
+        ]);
+
+
+        neovim = (pkgs.neovim.override {
+          withPython3 = true;
+          extraPython3Packages = pythonEnvFn;
         });
       in
       {
         defaultPackage = neovim;
+
         devShell = pkgs.mkShell {
-          buildInputs = [
+          buildInputs = with pkgs; [
             # pnglatex should be factored into pnglatex.nix
             # but that seems to be currently broken.
             # pnglatex = import ./pnglatex.nix;
-            neovim
-            pythonenv
-            pkgs.nixpkgs-fmt
-            pkgs.any-nix-shell
+            (python3.withPackages pythonEnvFn)
+            nixpkgs-fmt
           ];
         };
       });
