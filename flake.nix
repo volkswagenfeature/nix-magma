@@ -18,7 +18,7 @@
 
   outputs = { nixpkgs, flake-utils, ... }@inputs:
     let
-      supportedSystems = [ "aarch64-darwin" "x86_64-linux" ];
+      supportedSystems = [ "x86_64-linux" ];
       eachSystem = flake-utils.lib.eachSystem supportedSystems;
     in
     eachSystem (system:
@@ -51,10 +51,17 @@
             start = [ vim-lastplace vim-nix magma-nvim ]; 
           };
         });
+
+        /*
+        ipython = (inputs.jupyterWith.availableKernels.python {
+          name = "ipytest";
+          displayName = "test kernel";
+          inherit system;
+        });
+        */
       in
       {
-        defaultPackage = neovim;
-
+        packages.default = neovim;
 
         devShell = pkgs.mkShell {
           buildInputs = with pkgs; [
