@@ -40,6 +40,7 @@
           pillow
           cairosvg
           plotly
+          ipykernel
           # using definition above...
           (callPackage ./pnglatex.nix { })
         ]);
