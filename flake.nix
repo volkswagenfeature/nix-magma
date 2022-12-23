@@ -4,7 +4,7 @@
     flake-utils.url = "github:numtide/flake-utils";
 
     magma-nvim-src = {
-      url = "github:dccsillag/magma-nvim/main";
+      url = "github:WhiteBlackGoose/magma-nvim-goose";
       flake = false;
 
     };
@@ -12,7 +12,12 @@
       url = "github:tweag/jupyterWith"; 
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.flake-utils.follows = "flake-utils";
+    };
 
+    nixvim = {
+      url = "github:pta2002/nixvim";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.flake-utils.follows = "flake-utils";
     };
   };
 
